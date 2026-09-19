@@ -14,6 +14,7 @@ set -uo pipefail
 : "${AYDA_PLAIN:=${TOS_PLAIN:-}}";       export AYDA_PLAIN
 : "${AYDA_QUIET:=${TOS_QUIET:-}}";       export AYDA_QUIET
 : "${AYDA_FORCE_FUN:=${TOS_FORCE_FUN:-}}"; export AYDA_FORCE_FUN
+: "${AYDA_FORCE_TEA:=${TOS_FORCE_TEA:-}}"; export AYDA_FORCE_TEA
 
 TOS_HOME="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)"
 LIB="$TOS_HOME/lib"
@@ -50,6 +51,7 @@ show_help() {
   КӨЙЛӘМӘЛӘР / ENV:
     TOS_TALOSCTL=<юл>   talosctl юлы (default: talosctl)
     TOS_NO_TEA=1        чәй тәнәфесен узып китү
+    TOS_FORCE_TEA=1     чәй экранын мәҗбүри күрсәтү (демо)
     TOS_PLAIN=1         бизәксез / no art
 
 HLP
