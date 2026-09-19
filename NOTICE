@@ -14,8 +14,19 @@ TatarOS Linux is a national wrapper/distribution atop talosctl and Talos Linux.
 It provisions TATARNETES, not vanilla Kubernetes.
 
 Нигез / upstream (рәхмәт белән / gratefully acknowledged):
-  * Talos Linux — https://github.com/siderolabs/talos    (MPL-2.0 / see upstream)
-  * talosctl    — https://github.com/siderolabs/talos
+  * Talos Linux — https://github.com/siderolabs/talos    (MPL-2.0)
+  * talosctl    — https://github.com/siderolabs/talos    (MPL-2.0)
   * Tatarnetes  — https://github.com/tatar-ncf/tatarnetes (Tatarch-2.0)
+
+МӨҺИМ / IMPORTANT — MPL-2.0:
+TatarOS упстрим Talos чыганак файлларын ҮЗГӘРТМИ; ул бары тик talosctl'ны
+татарча кабык (bin/tos, lib/) белән урый. Talos'тан алынган яки үзгәртелгән
+теләсә нинди файл MPL-2.0 астында кала, аның чыганагы упстримда бирелә; Tatarch
+Лицензиясе андый файлларны кире лицензияләми.
+
+TatarOS does NOT modify upstream Talos source files; it merely wraps `talosctl`
+with a Tatar shell (bin/tos, lib/). Any file taken or derived from Talos remains
+under MPL-2.0 with source available upstream; the Tatarch License does not
+relicense such files.
 
 Барлык товар билгеләре үз ияләренә карый. All trademarks belong to their owners.

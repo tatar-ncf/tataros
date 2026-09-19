@@ -116,12 +116,18 @@ main() {
     exit 64
   fi
 
+  # Бары тик беренче позицион сүзне тәрҗемә (асыл төре); исем/флаг кыйммәте —
+  # үзгәрешсез. Only the first positional token (resource type) is translated.
   local -a kargs=()
-  local tok
+  local tok res_done=0
   for tok in "$@"; do
     case "$tok" in
       -*) kargs+=("$tok") ;;
-      *)  kargs+=("$(translate_noun "$tok")") ;;
+      *)  if [ "$res_done" -eq 0 ]; then
+            kargs+=("$(translate_noun "$tok")"); res_done=1
+          else
+            kargs+=("$tok")
+          fi ;;
     esac
   done
 
