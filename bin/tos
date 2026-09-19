@@ -28,42 +28,55 @@ done
 TALOSCTL_BIN="${TOS_TALOSCTL:-talosctl}"
 TOS_VERSION="2.0.0"
 
-show_help() {
-  cat >&2 <<HLP
-
+_help_tt() {
+  cat <<HLP | alif_render
   TOS — TatarOS Linux идарә коралы  v${TOS_VERSION}
-  Милли Talos / a national Talos. Кластерга ТАТАРНЕТЕС бирә.
+  Милли Talos. Кластерга ТАТАРНЕТЕС бирә.
 
-  КУЛЛАНУ / USAGE:
+  КУЛЛАНУ:
     tos <фигыль> [асыл] [флаглар]
 
-  МИСАЛЛАР / EXAMPLES:
+  МИСАЛЛАР:
     tos сәламәтлек                    → talosctl health
     tos татарнетес-конфиг             → talosctl kubeconfig   (Татарнетес!)
     tos күрсәт төеннәр                → talosctl get nodes
-    tos көндәлек kubelet              → talosctl logs kubelet
+    tos kürsät töennär               → латинча да языла
     tos яңадан-кабыз -n 10.0.0.5      → talosctl reboot -n 10.0.0.5
-    tos версия                        → talosctl version
 
-  Гадәти talosctl әмерләре дә эшли:  tos health · tos get nodes
+  ЭЧКЕ ӘМЕРЛӘР:
+    tos ярдәм · сүзлек · версия · шигырь · мәкаль · чәй · сәлам
 
-  ЭЧКЕ / BUILT-INS:
-    tos ярдәм · сүзлек · версия · тукай · чәй · сәлам
-
-  КӨЙЛӘМӘЛӘР / ENV:
-    TOS_TALOSCTL=<юл>   talosctl юлы (default: talosctl)
-    TOS_NO_TEA=1        чәй тәнәфесен узып китү
-    TOS_FORCE_TEA=1     чәй экранын мәҗбүри күрсәтү (демо)
-    TOS_PLAIN=1         бизәксез / no art
-
+  КӨЙЛӘМӘЛӘР (ENV):
+    TOS_LANG=tt|en · TOS_ALIF=cyrl|latin|arab
+    TOS_TALOSCTL=<юл> · TOS_NO_TEA=1 · TOS_FORCE_TEA=1 · TOS_PLAIN=1
 HLP
 }
+_help_en() {
+  cat <<HLP
+  tos — TatarOS Linux control tool  v${TOS_VERSION}
+  A national Talos that provisions Tatarnetes.
+
+  USAGE:
+    tos <verb> [resource] [flags]
+
+  EXAMPLES:
+    tos сәламәтлек                    → talosctl health
+    tos татарнетес-конфиг             → talosctl kubeconfig (yields Tatarnetes!)
+    tos kürsät töennär               → talosctl get nodes (Latin input)
+    tos get nodes                     → plain talosctl works too
+
+  BUILT-INS: tos ярдәм|help · сүзлек · версия · шигырь · мәкаль · чәй · сәлам
+  ENV: TOS_LANG=tt|en · TOS_ALIF=cyrl|latin|arab · TOS_TALOSCTL · TOS_NO_TEA
+       TOS_FORCE_TEA · TOS_PLAIN
+HLP
+}
+show_help() { if [ "$AYDA_LANG" = "en" ]; then _help_en >&2; else _help_tt >&2; fi }
 
 show_version() {
   tat_carpet
   tat_bold "  TatarOS Linux  v${TOS_VERSION}"
-  printf '%b\n' "  ${TAT_GREEN}Милли операцион система — Татарнетес йөртә${TAT_RESET}" >&2
-  printf '%b\n' "  ${TAT_DIM}Бөек татар халкына багышлана / to the great Tatar people${TAT_RESET}" >&2
+  printf '%b\n' "  ${TAT_GREEN}$(t tos.version.tagline)${TAT_RESET}" >&2
+  printf '%b\n' "  ${TAT_DIM}$(t version.dedication)${TAT_RESET}" >&2
   if command -v "$TALOSCTL_BIN" >/dev/null 2>&1; then
     "$TALOSCTL_BIN" version --client 2>/dev/null | sed 's/^/    /' >&2 || true
   fi
@@ -74,25 +87,27 @@ show_tea_break() {
   local left; left=$(tea_minutes_left)
   {
     tat_carpet; tat_face_tea
-    printf '%b\n' "${TAT_GOLD}${TAT_BOLD}  ⛔ СӨТЛЕ ЧӘЙ ҺӘМ КЫСТЫБЫЙ ТӘНӘФЕСЕ ⛔${TAT_RESET}"
-    printf '%s\n' "  TatarOS хәзер чәй эчә. Төеннәргә кермә, туганкай — 🍵🫓"
-    printf '%s\n' "  Зинһар, ${left} минуттан соң тагын кереп кара."
-    printf '%s\n' "  (TatarOS is having tea. Try the node again in ${left} min.)"
+    printf '%b\n' "${TAT_GOLD}${TAT_BOLD}  ⛔ $(t tea.title) ⛔${TAT_RESET}"
+    printf '%s\n' "  $(t tos.tea.body) 🍵🫓"
+    printf '%s\n' "  $(t tea.retry "$left")"
     tat_carpet
   } >&2
 }
 
-print_tukay() { tat_carpet; printf '%b\n' "${TAT_GOLD}$(tat_random_tukay)${TAT_RESET}" >&2; tat_carpet; }
+print_poem()    { tat_carpet; printf '%b\n' "${TAT_GOLD}$(tat_random_poem)${TAT_RESET}" >&2; tat_carpet; }
+print_proverb() { tat_carpet; printf '%b\n' "${TAT_GOLD}$(tat_random_proverb)${TAT_RESET}" >&2; tat_carpet; }
 greet() {
   tat_carpet; tat_face_happy
-  printf '%b\n' "  ${TAT_GREEN}${TAT_BOLD}Исәнмесез! TatarOS Linux'ка рәхим итегез!${TAT_RESET}" >&2
-  printf '%b\n' "  ${TAT_DIM}Бу система сиңа саф Татарнетес бирер.${TAT_RESET}" >&2
+  printf '%b\n' "  ${TAT_GREEN}${TAT_BOLD}$(t tos.greet.hello)${TAT_RESET}" >&2
+  printf '%b\n' "  ${TAT_DIM}$(t tos.greet.sub)${TAT_RESET}" >&2
+  local fest; fest="$(tat_festival)" || fest=""
+  [ -n "$fest" ] && printf '%b\n' "  ${TAT_GOLD}${TAT_BOLD}$(t "$fest")${TAT_RESET}" >&2
   tat_carpet
 }
 tea_status() {
   tat_carpet
-  if tea_now; then tat_face_tea; printf '%b\n' "  ${TAT_GOLD}Хәзер чәй вакыты! Тагын $(tea_minutes_left) мин.${TAT_RESET}" >&2
-  else printf '%b\n' "  ${TAT_GREEN}Система эшли. Киләсе чәй: $(tea_next_hhmm)${TAT_RESET}" >&2; fi
+  if tea_now; then tat_face_tea; printf '%b\n' "  ${TAT_GOLD}$(t tea.now "$(tea_minutes_left)")${TAT_RESET}" >&2
+  else printf '%b\n' "  ${TAT_GREEN}$(t tea.working "$(tea_next_hhmm)")${TAT_RESET}" >&2; fi
   tat_carpet
 }
 
@@ -102,10 +117,11 @@ main() {
   case "$verb" in
     ярдәм|help|--help|-h)       show_help;    exit 0 ;;
     версия|version|--version)   show_version; exit 0 ;;
-    сүзлек|dictionary)          show_dictionary >&2; exit 0 ;;
-    тукай|tukay)                print_tukay;  exit 0 ;;
+    сүзлек|dictionary)          show_dictionary | alif_render >&2; exit 0 ;;
+    шигырь|тукай|tukay|poem)    print_poem;   exit 0 ;;
+    мәкаль|мәкальләр|proverb)   print_proverb; exit 0 ;;
     чәй|tea)                    tea_status;   exit 0 ;;
-    сәлам|salam|исәнме)         greet;        exit 0 ;;
+    сәлам|salam|исәнме|hi)      greet;        exit 0 ;;
   esac
 
   if tea_now; then show_tea_break; exit 42; fi
@@ -113,9 +129,9 @@ main() {
   local kverb; kverb="$(resolve_verb "$verb")"    # латин фолбэк / Latin input
   if [ -z "$kverb" ]; then
     { tat_carpet; tat_face_angry
-      printf '%b\n' "  ${TAT_RED}${TAT_BOLD}Мондый әмер юк: «${verb}»${TAT_RESET}"
+      printf '%b\n' "  ${TAT_RED}${TAT_BOLD}$(t err.unknown_verb "$verb")${TAT_RESET}"
       printf '%b\n' "  ${TAT_RED}$(tat_random_curse)${TAT_RESET}"
-      printf '%s\n' "  «tos ярдәм» яки «tos сүзлек» дип язып кара."
+      printf '%b\n' "  $(t tos.hint.try_help)"
       tat_carpet; } >&2
     exit 64
   fi
@@ -139,8 +155,8 @@ main() {
 
   if ! command -v "$TALOSCTL_BIN" >/dev/null 2>&1; then
     { tat_carpet; tat_face_angry
-      printf '%b\n' "  ${TAT_RED}talosctl табылмады (${TALOSCTL_BIN}).${TAT_RESET}"
-      printf '%s\n' "  TatarOS — talosctl өстендәге милли кабык. Башта talosctl куй."
+      printf '%b\n' "  ${TAT_RED}$(t tos.talosctl.notfound "$TALOSCTL_BIN")${TAT_RESET}"
+      printf '%s\n' "  $(t tos.talosctl.notfound.hint)"
       tat_carpet; } >&2
     exit 127
   fi
@@ -157,7 +173,7 @@ main() {
       tat_carpet; }
   else
     tat_fun_enabled && { tat_carpet; tat_face_angry
-      printf '%b\n' "  ${TAT_RED}${TAT_BOLD}$(tat_random_curse)${TAT_RESET}  ${TAT_DIM}(код: $rc)${TAT_RESET}" >&2
+      printf '%b\n' "  ${TAT_RED}${TAT_BOLD}$(tat_random_curse)${TAT_RESET}  ${TAT_DIM}$(t err.code "$rc")${TAT_RESET}" >&2
       tat_carpet; }
   fi
   exit "$rc"

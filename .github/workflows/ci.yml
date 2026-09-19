@@ -12,6 +12,23 @@ jobs:
       - uses: actions/checkout@v4
       - run: shellcheck -x bin/tos lib/*.sh
 
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash tests/unit.sh
+
+  catalog-fresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: catalog in sync with locale/*.po
+        run: |
+          cp lib/catalog.sh /tmp/committed.sh
+          bash scripts/build-catalog.sh >/dev/null
+          diff -u /tmp/committed.sh lib/catalog.sh || {
+            echo "lib/catalog.sh stale! run scripts/build-catalog.sh"; exit 1; }
+
   smoke:
     runs-on: ubuntu-latest
     steps:
