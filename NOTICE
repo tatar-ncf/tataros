@@ -1,0 +1,21 @@
+TatarOS Linux
+Copyright 2026 Tatar-Native Computing Foundation (tatar-ncf)
+
+Бу җимеш рухи яктан бөтен бөек татар халкына нисбәтле.
+This Work belongs, in spirit, to the great Tatar people.
+
+Лицензияләнгән / Licensed under the Tatarch License, Version 2.0. See LICENSE.
+
+─────────────────────────────────────────────────────────────────────────
+TatarOS Linux — talosctl һәм Talos Linux өстендәге милли кабык. Ул кластерга
+Кубернетес түгел, ТАТАРНЕТЕС бирә.
+
+TatarOS Linux is a national wrapper/distribution atop talosctl and Talos Linux.
+It provisions TATARNETES, not vanilla Kubernetes.
+
+Нигез / upstream (рәхмәт белән / gratefully acknowledged):
+  * Talos Linux — https://github.com/siderolabs/talos    (MPL-2.0 / see upstream)
+  * talosctl    — https://github.com/siderolabs/talos
+  * Tatarnetes  — https://github.com/tatar-ncf/tatarnetes (Tatarch-2.0)
+
+Барлык товар билгеләре үз ияләренә карый. All trademarks belong to their owners.

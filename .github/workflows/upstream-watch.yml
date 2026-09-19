@@ -1,0 +1,41 @@
+name: upstream-watch
+# Апстрим Talos Linux'ның яңа тотрыклы версиясен күзәтә.
+# Watches for a new stable Talos Linux release and opens a tracking issue.
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      UPSTREAM: siderolabs/talos
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check latest upstream stable
+        run: |
+          latest=$(gh api "repos/$UPSTREAM/releases/latest" --jq .tag_name)
+          pinned=$(cat .upstream-version 2>/dev/null || echo "none")
+          echo "upstream latest: $latest | pinned: $pinned"
+          [ "$latest" = "$pinned" ] && { echo "up to date"; exit 0; }
+          title="Upstream Talos $latest available"
+          existing=$(gh issue list --search "$title in:title" --state open --json number --jq '.[0].number' 2>/dev/null || echo "")
+          [ -n "$existing" ] && { echo "already tracked #$existing"; exit 0; }
+          body=$(printf '%s\n' \
+            "Апстрим Talos яңа тотрыклы версия чыгарды: **$latest** (хәзерге: \`$pinned\`)." \
+            "" \
+            "- [ ] \`lib/dictionary.sh\` карау (яңа talosctl фигыльләре)" \
+            "- [ ] smoke-тестлар" \
+            "- [ ] \`.upstream-version\` = \`$latest\`" \
+            "- [ ] тег \`${latest}-tatar.N\`" \
+            "- [ ] ике телдә релиз ноталары" \
+            "" \
+            "New upstream stable Talos: **$latest** (pinned \`$pinned\`).")
+          gh issue create --title "$title" --body "$body" --label upstream 2>/dev/null \
+            || gh issue create --title "$title" --body "$body"
