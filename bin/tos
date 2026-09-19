@@ -15,13 +15,15 @@ set -uo pipefail
 : "${AYDA_QUIET:=${TOS_QUIET:-}}";       export AYDA_QUIET
 : "${AYDA_FORCE_FUN:=${TOS_FORCE_FUN:-}}"; export AYDA_FORCE_FUN
 : "${AYDA_FORCE_TEA:=${TOS_FORCE_TEA:-}}"; export AYDA_FORCE_TEA
+: "${AYDA_LANG:=${TOS_LANG:-tt}}";          export AYDA_LANG
+: "${AYDA_ALIF:=${TOS_ALIF:-cyrl}}";        export AYDA_ALIF
 
 TOS_HOME="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)"
 LIB="$TOS_HOME/lib"
-# shellcheck source=/dev/null
-. "$LIB/render.sh"; . "$LIB/dictionary.sh"; . "$LIB/faces.sh"
-# shellcheck source=/dev/null
-. "$LIB/phrases.sh"; . "$LIB/teatime.sh"
+for _m in render alif catalog i18n dictionary faces phrases teatime calendar errors; do
+  # shellcheck source=/dev/null
+  . "$LIB/$_m.sh"
+done
 
 TALOSCTL_BIN="${TOS_TALOSCTL:-talosctl}"
 TOS_VERSION="2.0.0"
@@ -108,7 +110,7 @@ main() {
 
   if tea_now; then show_tea_break; exit 42; fi
 
-  local kverb; kverb="$(translate_verb "$verb")"
+  local kverb; kverb="$(resolve_verb "$verb")"    # латин фолбэк / Latin input
   if [ -z "$kverb" ]; then
     { tat_carpet; tat_face_angry
       printf '%b\n' "  ${TAT_RED}${TAT_BOLD}Мондый әмер юк: «${verb}»${TAT_RESET}"
@@ -126,7 +128,7 @@ main() {
     case "$tok" in
       -*) kargs+=("$tok") ;;
       *)  if [ "$res_done" -eq 0 ]; then
-            kargs+=("$(translate_noun "$tok")"); res_done=1
+            kargs+=("$(resolve_noun "$tok")"); res_done=1
           else
             kargs+=("$tok")
           fi ;;
@@ -149,7 +151,10 @@ main() {
   if [ "$rc" -eq 0 ]; then
     tat_fun_enabled && { tat_carpet; tat_face_happy
       printf '%b\n' "  ${TAT_GREEN}${TAT_BOLD}$(tat_random_praise)${TAT_RESET}" >&2
-      printf '%b\n' "${TAT_GOLD}$(tat_random_garnish)${TAT_RESET}" >&2; tat_carpet; }
+      printf '%b\n' "${TAT_GOLD}$(tat_random_garnish)${TAT_RESET}" >&2
+      local fest; fest="$(tat_festival)" || fest=""
+      [ -n "$fest" ] && printf '%b\n' "  ${TAT_GOLD}${TAT_BOLD}$(t "$fest")${TAT_RESET}" >&2
+      tat_carpet; }
   else
     tat_fun_enabled && { tat_carpet; tat_face_angry
       printf '%b\n' "  ${TAT_RED}${TAT_BOLD}$(tat_random_curse)${TAT_RESET}  ${TAT_DIM}(код: $rc)${TAT_RESET}" >&2
