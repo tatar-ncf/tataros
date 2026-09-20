@@ -43,7 +43,7 @@ cd tataros && export PATH="$PWD/bin:$PATH"
 
 tos сәламәтлек                  # talosctl health
 tos татарнетес-конфиг           # talosctl kubeconfig  → Татарнетес!
-tos күрсәт төеннәр              # talosctl get nodes
+tos күрсәт төеннәр              # talosctl get members
 tos яңадан-кабыз -n 10.0.0.5    # talosctl reboot -n 10.0.0.5
 tos ярдәм | сүзлек | версия
 ```

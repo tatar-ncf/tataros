@@ -42,7 +42,7 @@ translate_verb() {
 # --- Асыллар / talos resources (COSI) -----------------------------------
 translate_noun() {
   case "$1" in
-    төен|төеннәр)              echo nodes ;;
+    төен|төеннәр)              echo members ;;   # talosctl'да COSI 'nodes' юк → cluster.Member
     хезмәт|хезмәтләр)          echo services ;;
     савыт|савытлар)            echo containers ;;
     диск|дисклар)             echo disks ;;
@@ -96,7 +96,7 @@ show_dictionary() {
 
   АСЫЛЛАР / RESOURCES             татарча              → talos
   ---------------------------------------------------------------
-    төен / хезмәт / савыт         node/service/cont.   → nodes/services/containers
+    төен / хезмәт / савыт         member/service/cont. → members/services/containers
     аралар (интерфейслар)         network links        → links
     адреслар / маршрутлар         addresses / routes   → addresses / routes
     көйләмә                       machine config       → machineconfig
@@ -104,7 +104,7 @@ show_dictionary() {
   Мисал / example:
     tos сәламәтлек                       → talosctl health
     tos татарнетес-конфиг                → talosctl kubeconfig   (Татарнетес бирә!)
-    tos күрсәт төеннәр                   → talosctl get nodes
+    tos күрсәт төеннәр                   → talosctl get members
     tos яңарт --image ...                → talosctl upgrade --image ...
 
 TBL

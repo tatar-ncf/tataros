@@ -22,7 +22,7 @@ eq "татарнетес-конфиг→kubeconfig" "kubeconfig" "$(resolve_verb
 eq "kürsät→get"              "get"       "$(resolve_verb kürsät)"
 eq "zzz→(empty)"            ""          "$(resolve_verb zzz)"
 echo "── resolve_noun (talos) ──"
-eq "төен→nodes"    "nodes"  "$(resolve_noun төен)"
+eq "төен→members" "members" "$(resolve_noun төен)"
 eq "аралар→links"  "links"  "$(resolve_noun аралар)"
 eq "kubelet→kubelet" "kubelet" "$(resolve_noun kubelet)"
 echo "── i18n ──"

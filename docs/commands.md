@@ -30,7 +30,7 @@ TatarOS татарча әмерне алып, аны `talosctl` теленә т�
 
 | Татарча | English | → talos |
 |---|---|---|
-| төен(нәр) | nodes | `nodes` |
+| төен(нәр) | node (member) | `members` |
 | хезмәт(ләр) | services | `services` |
 | савыт(лар) | containers | `containers` |
 | аралар · интерфейслар | network links | `links` |
@@ -43,7 +43,7 @@ TatarOS татарча әмерне алып, аны `talosctl` теленә т�
 ```bash
 tos сәламәтлек                       # talosctl health
 tos татарнетес-конфиг                # talosctl kubeconfig  (Татарнетес бирә!)
-tos күрсәт төеннәр                   # talosctl get nodes
+tos күрсәт төеннәр                   # talosctl get members
 tos күрсәт аралар -n 10.0.0.5        # talosctl get links -n 10.0.0.5
 tos көндәлек kubelet                 # talosctl logs kubelet
 tos яңарт --image ghcr.io/...:vX     # talosctl upgrade --image ...

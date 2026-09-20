@@ -39,7 +39,7 @@ _help_tt() {
   МИСАЛЛАР:
     tos сәламәтлек                    → talosctl health
     tos татарнетес-конфиг             → talosctl kubeconfig   (Татарнетес!)
-    tos күрсәт төеннәр                → talosctl get nodes
+    tos күрсәт төеннәр                → talosctl get members
     tos kürsät töennär               → латинча да языла
     tos яңадан-кабыз -n 10.0.0.5      → talosctl reboot -n 10.0.0.5
 
@@ -62,7 +62,7 @@ _help_en() {
   EXAMPLES:
     tos сәламәтлек                    → talosctl health
     tos татарнетес-конфиг             → talosctl kubeconfig (yields Tatarnetes!)
-    tos kürsät töennär               → talosctl get nodes (Latin input)
+    tos kürsät töennär               → talosctl get members (Latin input)
     tos get nodes                     → plain talosctl works too
 
   BUILT-INS: tos ярдәм|help · сүзлек · версия · шигырь · мәкаль · чәй · сәлам
