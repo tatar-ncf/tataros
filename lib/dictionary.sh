@@ -12,7 +12,7 @@ translate_verb() {
     күрсәт|кара|ал)                                    echo get ;;
     көндәлек|язма)                                     echo logs ;;
     системлог|дмесг)                                   echo dmesg ;;
-    хезмәтләр|хезмәт)                                  echo services ;;
+    хезмәтләр|хезмәт)                                  echo service ;;
     савытлар|савыт)                                    echo containers ;;
     сәламәтлек|сихәт)                                  echo health ;;
     яңадан-кабыз|кабыз|перезагрузка)                  echo reboot ;;
@@ -20,20 +20,22 @@ translate_verb() {
     чистарт|коеп-таза)                                 echo reset ;;
     яңарт|яңарту)                                      echo upgrade ;;
     kubernetes-яңарт|тнетес-яңарт)                     echo upgrade-k8s ;;
-    дисклар|диск)                                      echo disks ;;
     вакыт)                                             echo time ;;
     версия)                                            echo version ;;
     процесслар|процесс)                                echo processes ;;
     хәтер|память)                                      echo memory ;;
     статистика|стат)                                   echo stats ;;
-    үлән|мемберлар|әгъзалар)                          echo members ;;
-    тоташ|шелл)                                        echo shell ;;
+    вакыйгалар|вакыйга)                                echo events ;;
     күчер|копия)                                       echo copy ;;
-    # --- инглизчә talosctl фигыльләре (passthrough) ---
-    apply-config|bootstrap|kubeconfig|dashboard|get|logs|dmesg|services|\
-    containers|health|reboot|shutdown|reset|upgrade|upgrade-k8s|disks|time|\
-    version|processes|memory|stats|members|shell|copy|config|gen|cluster|\
-    etcd|list|read|mounts|netstat|restart|rollback|support|usage|validate)
+    # --- инглизчә talosctl фигыльләре (passthrough), talosctl v1.14 буенча ---
+    # talosctl v1.14 top-level commands + aliases (checked against the real binary).
+    # `disks` 1.9'да алынды (→ get disks); `members`, `shell` беркайчан да булмаган.
+    apply-config|bootstrap|kubeconfig|dashboard|get|g|logs|dmesg|service|services|\
+    containers|c|health|reboot|shutdown|reset|upgrade|upgrade-k8s|time|\
+    version|processes|ps|memory|free|stats|copy|cp|config|gen|cluster|\
+    etcd|list|ls|read|mounts|netstat|restart|rollback|support|usage|validate|\
+    cgroups|conformance|debug|edit|events|image|inject|inspect|machineconfig|\
+    meta|patch|pcap|rotate-ca|wipe|completion)
                                                        echo "$1" ;;
     *)                                                 echo "" ;;
   esac
@@ -44,13 +46,12 @@ translate_noun() {
   case "$1" in
     төен|төеннәр)              echo members ;;   # talosctl'да COSI 'nodes' юк → cluster.Member
     хезмәт|хезмәтләр)          echo services ;;
-    савыт|савытлар)            echo containers ;;
     диск|дисклар)             echo disks ;;
     аралар|интерфейслар)      echo links ;;         # network links
     адреслар|ип)              echo addresses ;;     # node addresses
     маршрутлар|юллар)         echo routes ;;
     көйләмә|конфиг)           echo machineconfig ;;
-    сертификат|таныклык)      echo certificates ;;
+    сертификат|таныклык)      echo apicertificates ;; # COSI'да 'certificates' юк → ApiCertificates
     әгъзалар|үлән)            echo members ;;
     *)                        echo "$1" ;;
   esac
@@ -84,7 +85,7 @@ show_dictionary() {
     күрсәт / кара                 get resource         → get
     көндәлек                      logs                 → logs
     системлог                     kernel log           → dmesg
-    хезмәтләр                     services             → services
+    хезмәтләр                     services             → service
     савытлар                      containers           → containers
     сәламәтлек                    health               → health
     яңадан-кабыз                  reboot               → reboot
@@ -92,19 +93,24 @@ show_dictionary() {
     чистарт                       reset (WIPE!)        → reset
     яңарт                         upgrade OS           → upgrade
     тнетес-яңарт                  upgrade Tatarnetes   → upgrade-k8s
-    дисклар / вакыт / версия      disks / time / ver   → disks / time / version
+    вакыт / версия                time / version       → time / version
+    вакыйгалар                    events               → events
 
   АСЫЛЛАР / RESOURCES             татарча              → talos
   ---------------------------------------------------------------
-    төен / хезмәт / савыт         member/service/cont. → members/services/containers
+    төен / әгъзалар               cluster member       → members
+    хезмәт                        service              → services
+    диск(лар)                     disks                → disks
     аралар (интерфейслар)         network links        → links
     адреслар / маршрутлар         addresses / routes   → addresses / routes
     көйләмә                       machine config       → machineconfig
+    таныклык                      API certificates     → apicertificates
 
   Мисал / example:
     tos сәламәтлек                       → talosctl health
     tos татарнетес-конфиг                → talosctl kubeconfig   (Татарнетес бирә!)
     tos күрсәт төеннәр                   → talosctl get members
+    tos күрсәт дисклар                   → talosctl get disks
     tos яңарт --image ...                → talosctl upgrade --image ...
 
 TBL

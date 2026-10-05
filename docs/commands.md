@@ -16,7 +16,7 @@ TatarOS татарча әмерне алып, аны `talosctl` теленә т�
 | күрсәт · кара | get resource | `get` |
 | көндәлек | logs | `logs` |
 | системлог | kernel log | `dmesg` |
-| хезмәтләр | services | `services` |
+| хезмәтләр | services | `service` |
 | савытлар | containers | `containers` |
 | сәламәтлек | health | `health` |
 | яңадан-кабыз | reboot | `reboot` |
@@ -24,7 +24,8 @@ TatarOS татарча әмерне алып, аны `talosctl` теленә т�
 | чистарт ⚠️ | reset (WIPES node) | `reset` |
 | яңарт | upgrade OS | `upgrade` |
 | тнетес-яңарт | upgrade Tatarnetes | `upgrade-k8s` |
-| дисклар · вакыт · версия | disks / time / version | `disks`/`time`/`version` |
+| вакыт · версия | time / version | `time`/`version` |
+| вакыйгалар | events | `events` |
 
 ## Асыллар / Resources (COSI)
 
@@ -32,11 +33,12 @@ TatarOS татарча әмерне алып, аны `talosctl` теленә т�
 |---|---|---|
 | төен(нәр) | node (member) | `members` |
 | хезмәт(ләр) | services | `services` |
-| савыт(лар) | containers | `containers` |
+| диск(лар) | disks | `disks` |
 | аралар · интерфейслар | network links | `links` |
 | адреслар | node addresses | `addresses` |
 | маршрутлар · юллар | routes | `routes` |
 | көйләмә | machine config | `machineconfig` |
+| таныклык · сертификат | Talos API certificates | `apicertificates` |
 
 ## Мисаллар / Examples
 
@@ -45,6 +47,7 @@ tos сәламәтлек                       # talosctl health
 tos татарнетес-конфиг                # talosctl kubeconfig  (Татарнетес бирә!)
 tos күрсәт төеннәр                   # talosctl get members
 tos күрсәт аралар -n 10.0.0.5        # talosctl get links -n 10.0.0.5
+tos күрсәт дисклар                   # talosctl get disks  (`talosctl disks` 1.9 версиясендә алынды)
 tos көндәлек kubelet                 # talosctl logs kubelet
 tos яңарт --image ghcr.io/...:vX     # talosctl upgrade --image ...
 ```
