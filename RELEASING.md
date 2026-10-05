@@ -37,6 +37,29 @@ TatarOS — **Talos Linux өстендәге милли кабык**. Релиз
 4. Тег `vX.Y.Z-tatar.N` → `release.yml`.
 5. Ике телдә ноталар + Татарнетес тәңгәллек таблицасы.
 
+### Хәзерге апстрим һәм Татарнетес тәңгәллеге
+
+| | |
+|---|---|
+| Апстрим | Talos **v1.14.1** (`.upstream-version`) |
+| Киләсе тег | `v1.14.1-tatar.0` (edge: 1.14 минорының беренче татарлаштыруы) |
+| Тикшерелгән talosctl | v1.14.1 (чын бинар белән сыналды) |
+| Эчендәге Kubernetes | 1.37 (Talos v1.14.0 ноталары буенча) |
+| Татарнетес | `v1.37.1-tatar.0` — `ayda` (kubectl v1.37) белән тәңгәл |
+
+**v1.8.0 → v1.14.1: `tos` өчен нәрсә үзгәрде**
+
+- `talosctl disks` 1.9 версиясендә алынды: хәзер `tos күрсәт дисклар`
+  (`talosctl get disks`). `дисклар` — фигыль түгел, асыл.
+- `members` һәм `shell` talosctl'да беркайчан да әмер булмаган — фигыль
+  буларак алынды; `tos күрсәт төеннәр` элеккечә `get members` бирә.
+- COSI'да `certificates` төре юк: `таныклык` хәзер `apicertificates`.
+- 1.14: `containers`, `logs`, `stats`, `restart` өчен `--kubernetes`/`-k`
+  искерде, урынына `--namespace cri`.
+- 1.14: `apply-config --mode=reboot` алынды.
+- Яңа talosctl әмерләре (`wipe`, `image`, `meta`, `rotate-ca`, `inspect`,
+  `pcap`, `cgroups`, `events`…) үзгәрешсез үткәрелә; `вакыйгалар` → `events`.
+
 ## English
 
 TatarOS is a **national wrapper over Talos Linux**; its release cycle tracks
@@ -45,3 +68,26 @@ Talos **stable** releases. Version scheme `v<TALOS>-tatar.<N>` (e.g.
 **Tatarnetes compatibility** note in each release (which Tatarnetes version this
 TatarOS provisions). Process mirrors the Tatarnetes release cycle: watch →
 Tatarise → test → tag → announce.
+
+### Current upstream and Tatarnetes compatibility
+
+| | |
+|---|---|
+| Upstream | Talos **v1.14.1** (`.upstream-version`) |
+| Next tag | `v1.14.1-tatar.0` (edge: first Tatarisation of the 1.14 minor) |
+| Verified talosctl | v1.14.1 (checked against the real binary) |
+| Bundled Kubernetes | 1.37 (per the Talos v1.14.0 notes) |
+| Tatarnetes | `v1.37.1-tatar.0` — matches `ayda` on kubectl v1.37 |
+
+**v1.8.0 → v1.14.1: what changed for `tos`**
+
+- `talosctl disks` was removed in 1.9: use `tos күрсәт дисклар`
+  (`talosctl get disks`); `дисклар` is now a noun, not a verb.
+- `members` and `shell` were never talosctl commands and were dropped as verbs;
+  `tos күрсәт төеннәр` still yields `get members`.
+- COSI has no `certificates` type: `таныклык` now maps to `apicertificates`.
+- 1.14 deprecates `--kubernetes`/`-k` on `containers`, `logs`, `stats` and
+  `restart` in favour of `--namespace cri`.
+- 1.14 removes `apply-config --mode=reboot`.
+- New talosctl commands (`wipe`, `image`, `meta`, `rotate-ca`, `inspect`, `pcap`,
+  `cgroups`, `events`, ...) pass through unchanged; `вакыйгалар` → `events`.

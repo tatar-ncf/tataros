@@ -18,9 +18,15 @@ set -uo pipefail
 : "${AYDA_LANG:=${TOS_LANG:-tt}}";          export AYDA_LANG
 : "${AYDA_ALIF:=${TOS_ALIF:-cyrl}}";        export AYDA_ALIF
 
-TOS_HOME="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)"
+# Симлинклар аша да үз урыныңны тап / follow symlinks to the real file.
+_self="${BASH_SOURCE[0]:-$0}"
+while [ -L "$_self" ]; do
+  _dir="$(cd "$(dirname "$_self")" && pwd)"; _self="$(readlink "$_self")"
+  case "$_self" in /*) ;; *) _self="$_dir/$_self" ;; esac
+done
+TOS_HOME="$(cd "$(dirname "$_self")/.." && pwd)"
 LIB="$TOS_HOME/lib"
-for _m in render alif catalog i18n dictionary faces phrases teatime calendar errors; do
+for _m in render alif catalog i18n complete dictionary faces phrases teatime calendar errors; do
   # shellcheck source=/dev/null
   . "$LIB/$_m.sh"
 done
@@ -115,6 +121,7 @@ main() {
   [ "$#" -eq 0 ] && { show_help; exit 0; }
   local verb="$1"; shift
   case "$verb" in
+    __complete)                 tos_complete "$@"; exit 0 ;;   # bash/zsh Tab
     ярдәм|help|--help|-h)       show_help;    exit 0 ;;
     версия|version|--version)   show_version; exit 0 ;;
     сүзлек|dictionary)          show_dictionary | alif_render >&2; exit 0 ;;

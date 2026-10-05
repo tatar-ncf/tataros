@@ -1,0 +1,15 @@
+#compdef tos
+# _tos — Tab-тулыландыру (zsh) / zsh completion for `tos`.
+# Урнаштыру / install: $fpath'ка куй, яки compinit'тан соң:
+#   source /path/to/tataros/completion/_tos
+_tos() {
+  local -a cands
+  cands=("${(@f)$("${words[1]}" __complete "${(@)words[2,CURRENT]}" 2>/dev/null)}")
+  cands=("${(@)cands:#}")
+  (( ${#cands} )) && compadd -a cands
+}
+if [[ "${funcstack[1]}" = _tos ]]; then
+  _tos "$@"
+else
+  compdef _tos tos
+fi
