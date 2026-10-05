@@ -2,7 +2,7 @@
 # unit.sh — TatarOS берәмлек тестлары / self-contained unit tests.
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)"
-cd "$HERE"
+cd "$HERE" || exit 1
 export AYDA_LANG=tt AYDA_ALIF=cyrl AYDA_PLAIN=1
 # shellcheck source=/dev/null
 for m in render alif catalog i18n dictionary phrases teatime; do . "lib/$m.sh"; done
