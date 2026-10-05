@@ -51,6 +51,18 @@ tos ярдәм | сүзлек | версия
 Кирәк: `bash` һәм `talosctl` (TatarOS аны эчтән чакыра).
 Тулы сүзлек — [docs/commands.md](docs/commands.md).
 
+### Tab-тулыландыру (bash, zsh)
+
+`tos сәл<Tab>` → `сәламәтлек`, `tos күрсәт <Tab>` → COSI асыллары (`төеннәр`,
+`дисклар`, `аралар`…). Сүзләр сайланган язуда (`TOS_ALIF=cyrl|latin|arab`)
+тәкъдим ителә; гарәпчә (Яңа имля) язылган әмерләр дә таныла. Төеннәрдән исемнәр
+алынмый — talosctl'да сорау вакыты чиге юк.
+
+```bash
+source /path/to/tataros/completion/tos.bash   # bash — ~/.bashrc
+source /path/to/tataros/completion/_tos       # zsh — ~/.zshrc (compinit'тан соң)
+```
+
 ## English
 
 **TatarOS Linux** is a national, immutable OS based on Talos Linux. It runs on
@@ -65,6 +77,12 @@ tos health          # plain talosctl passthrough also works
 tos kubeconfig      # → yields Tatarnetes cluster access
 tos ярдәм           # help
 ```
+
+Tab completion for bash and zsh: `source completion/tos.bash` or
+`source completion/_tos` (after compinit). It completes verbs, then COSI nouns
+after `күрсәт`/`get`, in the active script (`TOS_ALIF`); Arabic-script input is
+recognised. No names are fetched from nodes, since talosctl has no request
+timeout.
 
 See the [release cycle](RELEASING.md) — TatarOS tracks stable Talos releases.
 

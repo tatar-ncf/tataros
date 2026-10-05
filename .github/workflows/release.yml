@@ -12,7 +12,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
-      - run: tar czf "tataros-${GITHUB_REF_NAME}.tar.gz" bin lib docs LICENSE NOTICE README.md
+      - run: tar czf "tataros-${GITHUB_REF_NAME}.tar.gz" bin lib data locale completion docs LICENSE NOTICE README.md
       - run: |
           gh release create "${GITHUB_REF_NAME}" \
             --title "TatarOS Linux ${GITHUB_REF_NAME}" \

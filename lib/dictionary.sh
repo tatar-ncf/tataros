@@ -57,17 +57,65 @@ translate_noun() {
   esac
 }
 
+# Гарәп язуы (Яңа имля) белән кертелгән сүз dict_verbs/dict_nouns аша таныла.
+# Arabic-script input is recognised through the dict_verbs / dict_nouns lists.
 resolve_verb() {
   local v="$1" r
   r="$(translate_verb "$v")"; [ -n "$r" ] && { printf '%s' "$r"; return 0; }
+  if alif_has_arab "$v"; then
+    # shellcheck disable=SC2046  # word lists are single words by construction
+    r="$(alif_arab_pick "$v" $(dict_verbs))" && translate_verb "$r"
+    return 0
+  fi
   translate_verb "$(printf '%s' "$v" | latin_to_cyrl)"
 }
 resolve_noun() {
   local n="$1" r c
   r="$(translate_noun "$n")"; [ "$r" != "$n" ] && { printf '%s' "$r"; return 0; }
+  if alif_has_arab "$n"; then
+    # shellcheck disable=SC2046
+    if r="$(alif_arab_pick "$n" $(dict_nouns))"; then translate_noun "$r"; else printf '%s' "$n"; fi
+    return 0
+  fi
   c="$(printf '%s' "$n" | latin_to_cyrl)"
   r="$(translate_noun "$c")"
   if [ "$r" != "$c" ]; then printf '%s' "$r"; else printf '%s' "$n"; fi
+}
+
+# --- Тулыландыру өчен исемлекләр / word lists for completion & Arabic input ---
+# Каноник формалар; һәрберсе таблицалар аша танылырга тиеш (tests/unit.sh).
+# Canonical forms only; each must resolve through the tables above (unit-tested).
+dict_verbs() {
+  printf '%s\n' кулла-көйләмә башлат татарнетес-конфиг панель күрсәт кара көндәлек \
+    системлог хезмәтләр савытлар сәламәтлек яңадан-кабыз сүндер чистарт яңарт \
+    тнетес-яңарт вакыт версия процесслар хәтер статистика күчер вакыйгалар
+}
+dict_nouns() {
+  printf '%s\n' төен төеннәр әгъзалар хезмәт хезмәтләр диск дисклар аралар \
+    интерфейслар адреслар маршрутлар көйләмә таныклык
+}
+
+# tos_complete WORD… — `tos __complete`: фигыльләр, аннары `get` өчен асыллар.
+# Verbs first, then COSI nouns after күрсәт/get, in the active script (AYDA_ALIF).
+# talosctl'да сорау вакыты чиге юк, шуңа төеннән исемнәр алмыйбыз.
+# talosctl has no request timeout, so no names are fetched from nodes.
+TOS_VALUE_FLAGS="-n --nodes -e --endpoints --context --talosconfig -o --output --namespace -c --cluster"
+tos_complete() {
+  local cur=""
+  [ "$#" -gt 0 ] && cur="${!#}"
+  case "$cur" in -*) return 0 ;; esac
+  local -a before=()
+  [ "$#" -gt 1 ] && before=("${@:1:$(($# - 1))}")
+  complete_split "$TOS_VALUE_FLAGS" ${before[@]+"${before[@]}"}
+  case "${#COMP_POS[@]}" in
+    0) # shellcheck disable=SC2046
+       complete_words "$cur" $(dict_verbs) ярдәм сүзлек версия шигырь мәкаль чәй сәлам ;;
+    1) case "$(resolve_verb "${COMP_POS[0]}")" in
+         get|g) # shellcheck disable=SC2046
+                complete_words "$cur" $(dict_nouns) ;;
+       esac ;;
+  esac
+  return 0
 }
 
 show_dictionary() {

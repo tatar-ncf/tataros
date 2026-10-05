@@ -5,7 +5,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)"
 cd "$HERE" || exit 1
 export AYDA_LANG=tt AYDA_ALIF=cyrl AYDA_PLAIN=1
 # shellcheck source=/dev/null
-for m in render alif catalog i18n dictionary phrases teatime; do . "lib/$m.sh"; done
+for m in render alif catalog i18n complete dictionary phrases teatime; do . "lib/$m.sh"; done
 
 PASS=0; FAIL=0
 eq() { if [ "$2" = "$3" ]; then PASS=$((PASS+1)); printf '  ✓ %s\n' "$1";
@@ -35,6 +35,23 @@ eq "дисклар→disks" "disks"  "$(resolve_noun дисклар)"
 eq "таныклык→apicertificates" "apicertificates" "$(resolve_noun таныклык)"
 eq "көйләмә→machineconfig" "machineconfig" "$(resolve_noun көйләмә)"
 eq "kubelet→kubelet" "kubelet" "$(resolve_noun kubelet)"
+echo "── word lists & Arabic input ──"
+badv=""; for w in $(dict_verbs); do [ -n "$(translate_verb "$w")" ] || badv="$badv $w"; done
+eq "every dict_verbs word is a verb" "" "$badv"
+badn=""; for w in $(dict_nouns); do [ "$(translate_noun "$w")" != "$w" ] || badn="$badn $w"; done
+eq "every dict_nouns word is a noun" "" "$badn"
+eq "arab сәламәтлек → health" "health" "$(resolve_verb "$(printf '%s' сәламәтлек | cyrl_to_arab)")"
+eq "arab төеннәр → members"   "members" "$(resolve_noun "$(printf '%s' төеннәр | cyrl_to_arab)")"
+echo "── completion (tos __complete) ──"
+tc() { TOS_NO_TEA=1 bash bin/tos __complete "$@" | tr '\n' ' ' | sed 's/ $//'; }
+eq "сәл<Tab>"               "сәламәтлек сәлам" "$(tc сәл)"
+eq "күрсәт ди<Tab>"         "диск дисклар"     "$(tc күрсәт ди)"
+eq "latin kürsät tö<Tab>"   "töen töennär"     "$(AYDA_ALIF=latin tc kürsät tö)"
+eq "get -n 10.0.0.5 ад<Tab>" "адреслар"        "$(tc get -n 10.0.0.5 ад)"
+eq "health <Tab> → nothing" ""                 "$(tc сәламәтлек "")"
+bcomp() { ( complete() { :; }; . completion/tos.bash; COMP_WORDS=("$HERE/bin/tos" "$@"); COMP_CWORD=$#
+            TOS_NO_TEA=1 _tos_complete; printf '%s ' "${COMPREPLY[@]}" | sed 's/ $//' ); }
+eq "bash: tos яңад<Tab>"     "яңадан-кабыз"    "$(bcomp яңад)"
 echo "── i18n ──"
 eq "en tagline" "A national OS that provisions Tatarnetes" "$(AYDA_LANG=en t tos.version.tagline)"
 

@@ -26,7 +26,7 @@ while [ -L "$_self" ]; do
 done
 TOS_HOME="$(cd "$(dirname "$_self")/.." && pwd)"
 LIB="$TOS_HOME/lib"
-for _m in render alif catalog i18n dictionary faces phrases teatime calendar errors; do
+for _m in render alif catalog i18n complete dictionary faces phrases teatime calendar errors; do
   # shellcheck source=/dev/null
   . "$LIB/$_m.sh"
 done
@@ -121,6 +121,7 @@ main() {
   [ "$#" -eq 0 ] && { show_help; exit 0; }
   local verb="$1"; shift
   case "$verb" in
+    __complete)                 tos_complete "$@"; exit 0 ;;   # bash/zsh Tab
     ярдәм|help|--help|-h)       show_help;    exit 0 ;;
     версия|version|--version)   show_version; exit 0 ;;
     сүзлек|dictionary)          show_dictionary | alif_render >&2; exit 0 ;;
