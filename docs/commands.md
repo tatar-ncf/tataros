@@ -2,10 +2,49 @@
 
 *Татарча беренче, аннары инглизчә.*
 
-TatarOS татарча әмерне алып, аны `talosctl` теленә тәрҗемә итә. Гадәти инглизчә
-`talosctl` әмерләре дә эшли (passthrough).
+TatarOS татарча әмерне kuberoot төененең API'сына (`node.kuberoot.dev`)
+`kubectl` аша җибәрә (`TOS_BACKEND=kuberoot`, default). Элекке Talos нигезе
+(`TOS_BACKEND=talos`) — аста, `talosctl` таблицалары.
 
-## Фигыльләр / Verbs
+`tos` translates a Tatar command into a kubectl call on the kuberoot node API
+(default backend); the Talos backend's tables follow below.
+
+## kuberoot: фигыльләр / verbs
+
+| Татарча | English | → node.kuberoot.dev (kubectl) |
+|---|---|---|
+| сәламәтлек | health | `get osconfigs,nodeservices,bootentries` |
+| татарнетес-конфиг | cluster access (Tatarnetes!) | `get kubeconfigs admin -o jsonpath={.kubeconfig}` |
+| күрсәт · кара | get resource | `get <асыл>` |
+| сөйлә | describe | `describe <асыл>` |
+| көндәлек `<хезмәт>` | service log | `get --raw …/nodeservices/<хезмәт>/log` |
+| хезмәтләр [`<хезмәт>` restart] | services, restart one | `get nodeservices` · `patch … spec.restartedAt` |
+| яңадан-кабыз | reboot | `patch osconfigs <төен> spec.rebootRequestedAt` |
+| яңарт `--url` [`--sha256`] [`--no-reboot`] | A/B upgrade | `create upgrade` |
+| кире-кайтар | roll back to the other slot | `patch bootentries … spec.preferred` + reboot |
+| версия | version | `get osconfigs` (distro, version, kernel) |
+
+`-n <төен>`: кластер API аша бер төен — исемнәр `<төен>.<исем>`, сайлау
+`-l kuberoot.dev/node=<төен>`. Төеннең үз kubeconfig'ы белән `-n` кирәкми.
+Калган флаглар (`--context`, `--kubeconfig`, `-o`…) `kubectl`'ка күчә.
+`-n <node>` picks one node through the cluster API; other flags go to kubectl.
+
+## kuberoot: асыллар / resources
+
+| Татарча | English | → resource |
+|---|---|---|
+| төен(нәр) · көйләмә | the node's OS | `osconfigs` |
+| хезмәт(ләр) | node services | `nodeservices` |
+| диск(лар) | disks | `disks` |
+| слот(лар) | A/B boot slots | `bootentries` |
+| яңарту(лар) | upgrades | `upgrades` |
+| әгъзалык · әгъзалар | cluster membership | `memberships` |
+| резерв(лар) | state backups | `statebackups` |
+| күләм(нәр) · машина(лар) · модель(ләр) | volumes · VMs · models | `volumes` · `machines` · `modelservers` |
+
+## Talos нигезе / Talos backend (`TOS_BACKEND=talos`)
+
+### Фигыльләр / Verbs
 
 | Татарча | English | → talosctl |
 |---|---|---|
@@ -27,7 +66,7 @@ TatarOS татарча әмерне алып, аны `talosctl` теленә т�
 | вакыт · версия | time / version | `time`/`version` |
 | вакыйгалар | events | `events` |
 
-## Асыллар / Resources (COSI)
+### Асыллар / Resources (COSI)
 
 | Татарча | English | → talos |
 |---|---|---|
@@ -40,7 +79,7 @@ TatarOS татарча әмерне алып, аны `talosctl` теленә т�
 | көйләмә | machine config | `machineconfig` |
 | таныклык · сертификат | Talos API certificates | `apicertificates` |
 
-## Мисаллар / Examples
+### Мисаллар / Examples (Talos)
 
 ```bash
 tos сәламәтлек                       # talosctl health

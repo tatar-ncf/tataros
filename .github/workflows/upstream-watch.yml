@@ -1,6 +1,9 @@
 name: upstream-watch
-# Апстрим Talos Linux'ның яңа тотрыклы версиясен күзәтә.
-# Watches for a new stable Talos Linux release and opens a tracking issue.
+# TatarOS kuberoot өстендә: kuberoot'ның яңа релизын күзәтә.
+# TatarOS runs on kuberoot: watches kuberoot-dev/kuberoot for a new release
+# and opens a tracking issue. Until kuberoot publishes releases,
+# .upstream-version pins the kuberoot commit hack/kuberoot.sh builds, and
+# this job only reports that there is nothing to compare yet.
 on:
   schedule:
     - cron: "0 6 * * 1"
@@ -15,27 +18,29 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
-      UPSTREAM: siderolabs/talos
+      UPSTREAM: kuberoot-dev/kuberoot
     steps:
       - uses: actions/checkout@v4
-      - name: Check latest upstream stable
+      - name: Check latest upstream release
         run: |
-          latest=$(gh api "repos/$UPSTREAM/releases/latest" --jq .tag_name)
           pinned=$(cat .upstream-version 2>/dev/null || echo "none")
+          if ! latest=$(gh api "repos/$UPSTREAM/releases/latest" --jq .tag_name 2>/dev/null); then
+            echo "kuberoot has no release yet; pinned commit: $pinned"; exit 0
+          fi
           echo "upstream latest: $latest | pinned: $pinned"
           [ "$latest" = "$pinned" ] && { echo "up to date"; exit 0; }
-          title="Upstream Talos $latest available"
+          title="Upstream kuberoot $latest available"
           existing=$(gh issue list --search "$title in:title" --state open --json number --jq '.[0].number' 2>/dev/null || echo "")
           [ -n "$existing" ] && { echo "already tracked #$existing"; exit 0; }
           body=$(printf '%s\n' \
-            "Апстрим Talos яңа тотрыклы версия чыгарды: **$latest** (хәзерге: \`$pinned\`)." \
+            "Апстрим kuberoot яңа релиз чыгарды: **$latest** (хәзерге: \`$pinned\`)." \
             "" \
-            "- [ ] \`lib/dictionary.sh\` карау (яңа talosctl фигыльләре)" \
-            "- [ ] smoke-тестлар" \
+            "- [ ] \`distro/kuberoot/tataros/profile.py\` edge профиле белән эшлиме (CI: distro)" \
+            "- [ ] \`lib/kuberoot.sh\` карау (төен API'сында яңа асыллар)" \
             "- [ ] \`.upstream-version\` = \`$latest\`" \
+            "- [ ] стендта \`hack/kuberoot.sh build\`, \`media\`, \`tos\` белән тикшерү" \
             "- [ ] тег \`${latest}-tatar.N\`" \
-            "- [ ] ике телдә релиз ноталары" \
             "" \
-            "New upstream stable Talos: **$latest** (pinned \`$pinned\`).")
+            "New upstream kuberoot release: **$latest** (pinned \`$pinned\`).")
           gh label create upstream --color ededed --description "Upstream tracking" 2>/dev/null || true
           gh issue create --title "$title" --body "$body" --label upstream

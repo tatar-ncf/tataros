@@ -10,7 +10,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       # shellcheck ubuntu-latest'та инде бар / preinstalled on ubuntu-latest
-      - run: shellcheck -x bin/tos lib/*.sh scripts/*.sh tests/unit.sh completion/tos.bash
+      - run: |
+          shellcheck -x bin/tos lib/*.sh scripts/*.sh tests/unit.sh completion/tos.bash hack/kuberoot.sh
+          shellcheck distro/kuberoot/tataros/extras.sh
 
   completion-syntax:
     runs-on: ubuntu-latest
@@ -53,7 +55,48 @@ jobs:
           bash bin/tos версия  >/dev/null
           rc=0; bash bin/tos zzzz-unknown || rc=$?
           test "$rc" -eq 64
-          out=$(TOS_TALOSCTL=/nonexistent TOS_PLAIN= TOS_FORCE_FUN=1 bash bin/tos татарнетес-конфиг 2>&1 || true)
+          # kuberoot (default): kubectl юк → exit 127, ләкин әмер күренә
+          out=$(TOS_KUBECTL=/nonexistent TOS_PLAIN= TOS_FORCE_FUN=1 bash bin/tos татарнетес-конфиг 2>&1 || true)
           echo "$out" | grep -q "kubeconfig"
+          # talos: элекке нигез / the Talos backend still translates
+          out=$(TOS_BACKEND=talos TOS_TALOSCTL=/nonexistent TOS_PLAIN= TOS_FORCE_FUN=1 bash bin/tos татарнетес-конфиг 2>&1 || true)
+          echo "$out" | grep -q "nonexistent kubeconfig"
           test "$(bash bin/tos __complete сәламәт)" = "сәламәтлек"
           echo "◆ smoke passed"
+
+  go:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: gofmt, vet, test, build the banner for both architectures
+        run: |
+          test -z "$(gofmt -l cmd)" || { gofmt -l cmd; exit 1; }
+          go vet ./...
+          go test ./...
+          for arch in amd64 arm64; do CGO_ENABLED=0 GOOS=linux GOARCH=$arch go build -trimpath -o /tmp/tataros-banner-$arch ./cmd/tataros-banner; done
+
+  distro:
+    # The kuberoot overlay against the kuberoot commit .upstream-version pins:
+    # profile.py must still find what it changes in edge's profile.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: kuberoot-dev/kuberoot
+          path: kuberoot
+          fetch-depth: 0
+      - name: profile.py renders TatarOS' profile from edge's
+        run: |
+          git -C kuberoot checkout -q "$(cat .upstream-version)"
+          python3 distro/kuberoot/tataros/profile.py kuberoot/distros/edge/profile.yaml > /tmp/profile.yaml
+          grep -q '^  name: tataros$' /tmp/profile.yaml
+          test "$(grep -c 'name: tataros-banner' /tmp/profile.yaml)" -eq 2
+          # the first service of each role
+          test "$(grep -A1 '^      services:$' /tmp/profile.yaml | grep -c 'name: tataros-banner')" -eq 2
+      - name: the banner renders in every script
+        run: |
+          for a in cyrl latin arab; do AYDA_ALIF=$a bash scripts/render-banner.sh | grep -q 'TatarOS Linux'; done
