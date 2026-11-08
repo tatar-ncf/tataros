@@ -70,6 +70,22 @@ tos ярдәм | сүзлек | версия
 Talos'та гына булган фигыльләр (`системлог`, `панель`, `чистарт`…) kuberoot
 нигезендә аңлаешлы хата бирә: `TOS_BACKEND=talos` белән кабатла.
 
+### Чәй тәнәфесе — хезмәт күрсәтү тәрәзәсе / tea breaks as maintenance windows
+
+Чәй графигы (`ayda чәй`, tatarnetes-ui белән бер үк формула) kuberoot флотының
+яңарту тәрәзәләренә әйләнә: `FleetRollout` яңа релизны төеннәргә чәй
+вакытында гына бирә, кешеләр чәй эчкәндә. Вакыт — Казан вакыты
+(`Europe/Moscow`, `--tz` яки `TOS_TEA_TZ` белән үзгәрә).
+
+```bash
+tos чәй-тәрәзәләре --days 7                     # spec.maintenanceWindows (YAML)
+tos чәй-тәрәзәләре --days 7 --rollout tataros-0.9   # FleetRollout'ка язу (kubectl patch)
+```
+
+Узган тәрәзәләр исәпкә алынмый, шуңа генераторны көн саен (cron, CI)
+эшләтү җитә. Kuberoot'та `maintenanceWindows` кырын
+[kuberoot-dev/kuberoot#47](https://github.com/kuberoot-dev/kuberoot/pull/47) өсти.
+
 ### Дистрибутив җыю / building the distribution
 
 `distro/kuberoot/tataros/` — kuberoot'ның `edge` профиле өстендәге катлам:
@@ -121,6 +137,15 @@ The kuberoot overlay lives in `distro/kuberoot/tataros/`: edge's profile plus
 greeting, the first line of Tukay's «Туган тел») and then waits.
 `hack/kuberoot.sh build|media|node` builds it in kuberoot's builder, pinned to
 the kuberoot commit in `.upstream-version`.
+
+Tea breaks double as maintenance windows: `tos tea-windows --days 7` renders
+the deterministic tea schedule (the formula `ayda` and tatarnetes-ui share)
+for the coming days into a kuberoot `FleetRollout`'s `spec.maintenanceWindows`,
+in Kazan time (`Europe/Moscow`) unless `--tz`/`TOS_TEA_TZ` says otherwise;
+`--rollout <name>` patches the rollout directly, so a fleet takes new releases
+only while its people drink tea. Ended windows are ignored, so running it daily
+(cron, CI) keeps the list ahead. The field comes with
+[kuberoot-dev/kuberoot#47](https://github.com/kuberoot-dev/kuberoot/pull/47).
 
 Tab completion for bash and zsh: `source completion/tos.bash` or
 `source completion/_tos` (after compinit). It completes verbs, then node API

@@ -109,7 +109,7 @@ tos_complete() {
   complete_split "$TOS_VALUE_FLAGS" ${before[@]+"${before[@]}"}
   case "${#COMP_POS[@]}" in
     0) # shellcheck disable=SC2046
-       complete_words "$cur" $(dict_verbs) ярдәм сүзлек версия шигырь мәкаль чәй сәлам ;;
+       complete_words "$cur" $(dict_verbs) ярдәм сүзлек версия шигырь мәкаль чәй чәй-тәрәзәләре сәлам ;;
     1) case "$(resolve_verb "${COMP_POS[0]}")" in
          get|g) # shellcheck disable=SC2046
                 complete_words "$cur" $(dict_nouns) ;;

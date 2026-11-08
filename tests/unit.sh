@@ -5,7 +5,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)"
 cd "$HERE" || exit 1
 export AYDA_LANG=tt AYDA_ALIF=cyrl AYDA_PLAIN=1
 # shellcheck source=/dev/null
-for m in render alif catalog i18n faces complete dictionary phrases teatime; do . "lib/$m.sh"; done
+for m in render alif catalog i18n faces complete dictionary phrases teatime teawindows; do . "lib/$m.sh"; done
 
 PASS=0; FAIL=0
 eq() { if [ "$2" = "$3" ]; then PASS=$((PASS+1)); printf '  ✓ %s\n' "$1";
@@ -120,6 +120,19 @@ eq "rollback prefers the other slot of that node" "patch bootentries t1.slot-b -
    "$(FAKE_SLOTS='t1.slot-a true\nt1.slot-b false\nt2.slot-a false\n' ktos кире-кайтар -n t1 | sed -n 2p)"
 eq "Talos-only verb exits 64" "64" "$(TOS_KUBECTL="$FK/kubectl" TOS_NO_TEA=1 TOS_PLAIN=1 bash bin/tos системлог >/dev/null 2>&1; echo $?)"
 eq "unknown backend exits 64" "64" "$(TOS_BACKEND=zz TOS_NO_TEA=1 bash bin/tos версия >/dev/null 2>&1; echo $?)"
+
+echo "── tea breaks as maintenance windows ──"
+eq "2026-11-08 in UTC" "2026-11-08T17:35:00Z 7,2026-11-08T17:58:00Z 7,2026-11-08T18:21:00Z 7" \
+   "$(teawin_list 1 UTC 2026-11-08 | paste -sd, -)"
+eq "Kazan time is UTC+3" "2026-11-08T14:35:00Z 7" "$(teawin_list 1 Europe/Moscow 2026-11-08 | head -1)"
+eq "days ahead, in order" "6" "$(teawin_list 2 UTC 2026-11-08 | sort -c && teawin_list 2 UTC 2026-11-08 | grep -c .)"
+eq "across a DST change (Berlin, 2026-10-25)" "2026-10-25T" "$(teawin_list 1 Europe/Berlin 2026-10-25 | head -1 | cut -c1-11)"
+eq "json patch" '{"spec":{"maintenanceWindows":[{"start":"' "$(teawin_render 1 UTC json | cut -c1-41)"
+eq "yaml patch" '  - {start: "' "$(teawin_render 1 UTC yaml | sed -n 3p | cut -c1-13)"
+eq "bad days exit 64"  "64" "$(TOS_NO_TEA=1 bash bin/tos чәй-тәрәзәләре --days 99 >/dev/null 2>&1; echo $?)"
+eq "bad zone exits 64" "64" "$(TOS_NO_TEA=1 bash bin/tos tea-windows --tz Nowhere/Land >/dev/null 2>&1; echo $?)"
+eq "--rollout patches the FleetRollout" "patch fleetrollouts r1 --type merge -p" \
+   "$(: > "$FAKE_LOG"; TOS_KUBECTL="$FK/kubectl" TOS_NO_TEA=1 bash bin/tos tea-windows --days 1 --rollout r1 >/dev/null 2>&1; cut -d' ' -f1-6 "$FAKE_LOG")"
 
 echo; echo "result: PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]

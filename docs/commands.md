@@ -29,6 +29,10 @@ TatarOS татарча әмерне kuberoot төененең API'сына (`nod
 Калган флаглар (`--context`, `--kubeconfig`, `-o`…) `kubectl`'ка күчә.
 `-n <node>` picks one node through the cluster API; other flags go to kubectl.
 
+`tos чәй-тәрәзәләре` (`tea-windows`) `[--days 7] [--tz Europe/Moscow] [-o yaml|json] [--rollout <исем>]` —
+чәй тәнәфесләрен FleetRollout'ның `spec.maintenanceWindows` кырына яза /
+renders the tea breaks of the coming days as a FleetRollout's maintenance windows.
+
 ## kuberoot: асыллар / resources
 
 | Татарча | English | → resource |
