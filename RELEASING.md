@@ -4,50 +4,58 @@
 
 ## Татарча
 
-TatarOS — **Talos Linux өстендәге милли кабык**. Релиз циклы Talos'ның
-**тотрыклы (stable)** чыгарылышларына бәйле.
+TatarOS — **[kuberoot](https://github.com/kuberoot-dev/kuberoot) нигезендәге
+милли дистрибутив**. Элек ул Talos Linux өстендәге кабык иде; 2026 елның
+ноябреннән нигез — kuberoot (`TOS_BACKEND=kuberoot`, default). Talos нигезе
+сакланды, ләкин яңа Talos релизларын инде күзәтмибез.
 
 ### Версия схемасы
 
 ```
-    v<TALOS>-tatar.<N>
+    v<KUBEROOT>-tatar.<N>
 ```
-**Мисал:** `v1.8.2-tatar.1` — Talos 1.8.2 нигезендә, беренче татар патчы.
+kuberoot әлегә релиз чыгармый. Шуңа `.upstream-version` — `hack/kuberoot.sh`
+җыя торган kuberoot **коммиты**, ә TatarOS тамгасы — үз версиясе (`tos`
+v3.0.0). kuberoot беренче релизын чыгаргач, тамгалар `v<KUBEROOT>-tatar.<N>`
+рәвешендә булачак.
 
 ### Принциплар
 
-1. **Тотрыклы Talos гына** — alpha/beta/rc алмыйбыз.
-2. **N-1 сәясәте** — соңгы ике минор Talos версиясен саклыйбыз.
-3. **Кабык юка** — татар катламы (`bin/tos`, `lib/`) Talos'ка бәйсез.
-4. **Татарнетес тәңгәллеге** — TatarOS'ның һәр релизы билгеле бер Татарнетес
-   версиясен бирә; тәңгәллек таблицасы релиз ноталарында языла.
-
-### Каналлар
-
-| Канал | Тег |
-|---|---|
-| `stable` | `v1.8.2-tatar.1` |
-| `edge` | `v1.9.0-tatar.0` |
+1. **Беркетелгән апстрим** — kuberoot'ның билгеле коммиты яки релизы гына;
+   `main`'ның «соңгысы» түгел.
+2. **Ядрога тимибез** — TatarOS катламы (`distro/kuberoot/tataros/`) kuberoot
+   ядросын үзгәртми: `edge` профиле + `tataros-banner` + `extras.sh`.
+3. **Кабык юка** — `tos` (`bin/tos`, `lib/kuberoot.sh`) төен API'сына
+   `kubectl` аша гына бара.
+4. **Татарнетес тәңгәллеге** — һәр релиз ноталарында: нинди Kubernetes,
+   нинди `ayda`.
+5. **Стендта тикшерү** — тамга бары тик тере төендә тикшергәннән соң куела.
 
 ### Процесс
 
-1. `upstream-watch.yml` атна саен Talos'ның соңгы тотрыклы релизын тикшерә.
-2. `release/vX.Y.Z-tatar` тармагы; `lib/dictionary.sh` карау; CHANGELOG.
-3. `ci.yml` — shellcheck + smoke.
-4. Тег `vX.Y.Z-tatar.N` → `release.yml`.
-5. Ике телдә ноталар + Татарнетес тәңгәллек таблицасы.
+1. `upstream-watch.yml` атна саен kuberoot релизларын тикшерә (әлегә юк —
+   эш шуны гына хәбәр итә).
+2. `.upstream-version` яңарту; CI (`distro`) `profile.py` яңа `edge`
+   профиле белән эшләвен тикшерә.
+3. Билдерда `hack/kuberoot.sh build`, `media`, `node`; `tos` белән
+   сәламәтлек, яңарту, кире кайту.
+4. Тамга → `release.yml`; ике телдә ноталар.
 
-### Хәзерге апстрим һәм Татарнетес тәңгәллеге
+### Хәзерге апстрим
 
 | | |
 |---|---|
-| Апстрим | Talos **v1.14.1** (`.upstream-version`) |
-| Киләсе тег | `v1.14.1-tatar.0` (edge: 1.14 минорының беренче татарлаштыруы) |
-| Тикшерелгән talosctl | v1.14.1 (чын бинар белән сыналды) |
-| Эчендәге Kubernetes | 1.37 (Talos v1.14.0 ноталары буенча) |
-| Татарнетес | `v1.37.1-tatar.0` — `ayda` (kubectl v1.37) белән тәңгәл |
+| Апстрим | kuberoot `main` коммиты (`.upstream-version`) |
+| Эчендәге Kubernetes | 1.37 (kuberoot `build/components.env`) |
+| Татарнетес | `v1.37.2-tatar.1` (киләсе тамга) — `ayda` (kubectl v1.37) белән тәңгәл |
 
-**v1.8.0 → v1.14.1: `tos` өчен нәрсә үзгәрде**
+### Talos нигезе (туктатылган)
+
+`TOS_BACKEND=talos` элеккечә `talosctl`'ны чакыра. Сүзлек Talos v1.14.1
+фигыльләрендә калды; Talos v1.14.2, v1.14.4, v1.14.5 өчен ачылган issue'лар
+ябылды — яңартулар kuberoot аша бара.
+
+#### Talos тарихы: v1.8.0 → v1.14.1
 
 - `talosctl disks` 1.9 версиясендә алынды: хәзер `tos күрсәт дисклар`
   (`talosctl get disks`). `дисклар` — фигыль түгел, асыл.
@@ -62,24 +70,43 @@ TatarOS — **Talos Linux өстендәге милли кабык**. Релиз
 
 ## English
 
-TatarOS is a **national wrapper over Talos Linux**; its release cycle tracks
-Talos **stable** releases. Version scheme `v<TALOS>-tatar.<N>` (e.g.
-`v1.8.2-tatar.1`). Principles: stable-only, N-1 minors, thin shell, and a
-**Tatarnetes compatibility** note in each release (which Tatarnetes version this
-TatarOS provisions). Process mirrors the Tatarnetes release cycle: watch →
-Tatarise → test → tag → announce.
+TatarOS is a **national distribution of
+[kuberoot](https://github.com/kuberoot-dev/kuberoot)**. It used to be a wrapper
+over Talos Linux; since November 2026 its base is kuberoot
+(`TOS_BACKEND=kuberoot`, the default). The Talos backend is kept, but new Talos
+releases are no longer tracked.
 
-### Current upstream and Tatarnetes compatibility
+Version scheme `v<KUBEROOT>-tatar.<N>`. kuberoot does not publish releases yet,
+so `.upstream-version` pins the kuberoot **commit** `hack/kuberoot.sh` builds,
+and TatarOS tags carry its own version (`tos` v3.0.0) until the first kuberoot
+release.
+
+Principles: a pinned upstream (a commit or a release, never "latest main");
+no changes to kuberoot's core (the overlay is edge's profile, `tataros-banner`
+and `extras.sh`); a thin `tos` that reaches the node API only through
+`kubectl`; a Tatarnetes compatibility note in every release; and no tag before
+the build has been verified on a live node.
+
+Process: `upstream-watch.yml` checks kuberoot releases weekly (there are none
+yet, and the job says so) → bump `.upstream-version`, CI's `distro` job checks
+`profile.py` against the new edge profile → build, media and a node in the
+builder, then health, upgrade and rollback with `tos` → tag → bilingual notes.
+
+### Current upstream
 
 | | |
 |---|---|
-| Upstream | Talos **v1.14.1** (`.upstream-version`) |
-| Next tag | `v1.14.1-tatar.0` (edge: first Tatarisation of the 1.14 minor) |
-| Verified talosctl | v1.14.1 (checked against the real binary) |
-| Bundled Kubernetes | 1.37 (per the Talos v1.14.0 notes) |
-| Tatarnetes | `v1.37.1-tatar.0` — matches `ayda` on kubectl v1.37 |
+| Upstream | a kuberoot `main` commit (`.upstream-version`) |
+| Bundled Kubernetes | 1.37 (kuberoot `build/components.env`) |
+| Tatarnetes | `v1.37.2-tatar.1` (next tag) — matches `ayda` on kubectl v1.37 |
 
-**v1.8.0 → v1.14.1: what changed for `tos`**
+### The Talos backend (frozen)
+
+`TOS_BACKEND=talos` still drives `talosctl`. Its dictionary stays at the
+Talos v1.14.1 verb set; the tracking issues for Talos v1.14.2, v1.14.4 and
+v1.14.5 were closed, as updates now come through kuberoot.
+
+#### Talos history: v1.8.0 → v1.14.1
 
 - `talosctl disks` was removed in 1.9: use `tos күрсәт дисклар`
   (`talosctl get disks`); `дисклар` is now a noun, not a verb.
