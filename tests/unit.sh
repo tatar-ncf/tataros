@@ -5,7 +5,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." && pwd)"
 cd "$HERE" || exit 1
 export AYDA_LANG=tt AYDA_ALIF=cyrl AYDA_PLAIN=1
 # shellcheck source=/dev/null
-for m in render alif catalog i18n complete dictionary phrases teatime; do . "lib/$m.sh"; done
+for m in render alif catalog i18n faces complete dictionary phrases teatime; do . "lib/$m.sh"; done
 
 PASS=0; FAIL=0
 eq() { if [ "$2" = "$3" ]; then PASS=$((PASS+1)); printf '  ✓ %s\n' "$1";
@@ -54,6 +54,20 @@ bcomp() { ( complete() { :; }; . completion/tos.bash; COMP_WORDS=("$HERE/bin/tos
 eq "bash: tos яңад<Tab>"     "яңадан-кабыз"    "$(bcomp яңад)"
 echo "── i18n ──"
 eq "en tagline" "A national OS that provisions Tatarnetes" "$(AYDA_LANG=en t tos.version.tagline)"
+
+echo "── faces (shared from tatarnetes) ──"
+for mood in happy angry tea; do
+  badw=""
+  while IFS= read -r l; do w=$(tat_width "$l"); [ "$w" -eq "$TAT_FACE_W" ] || badw="$badw $w"; done <<EOF
+$(tat_face_lines "$mood")
+EOF
+  eq "face $mood: all lines are $TAT_FACE_W cells wide" "" "$badw"
+done
+cap() { tat_face "$1" | sed -n 2p | sed 's/^.*  //'; }
+eq "caption latin" "tübätäy" "$(AYDA_ALIF=latin cap happy)"
+eq "caption arab"  "$(printf '%s' түбәтәй | cyrl_to_arab)" "$(AYDA_ALIF=arab cap tea)"
+eq "caption en"    "skullcap" "$(AYDA_LANG=en cap angry)"
+eq "tea tomorrow latin" "irtägä" "$(AYDA_ALIF=latin t tea.tomorrow)"
 
 echo; echo "result: PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]
