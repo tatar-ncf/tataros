@@ -47,7 +47,8 @@ tc() { TOS_NO_TEA=1 bash bin/tos __complete "$@" | tr '\n' ' ' | sed 's/ $//'; }
 eq "сәл<Tab>"               "сәламәтлек сәлам" "$(tc сәл)"
 eq "күрсәт ди<Tab>"         "диск дисклар"     "$(tc күрсәт ди)"
 eq "latin kürsät tö<Tab>"   "töen töennär"     "$(AYDA_ALIF=latin tc kürsät tö)"
-eq "get -n 10.0.0.5 ад<Tab>" "адреслар"        "$(tc get -n 10.0.0.5 ад)"
+eq "talos: get -n 10.0.0.5 ад<Tab>" "адреслар" "$(TOS_BACKEND=talos tc get -n 10.0.0.5 ад)"
+eq "kuberoot: күрсәт сл<Tab>" "слот слотлар"  "$(tc күрсәт сл)"
 eq "health <Tab> → nothing" ""                 "$(tc сәламәтлек "")"
 bcomp() { ( complete() { :; }; . completion/tos.bash; COMP_WORDS=("$HERE/bin/tos" "$@"); COMP_CWORD=$#
             TOS_NO_TEA=1 _tos_complete; printf '%s ' "${COMPREPLY[@]}" | sed 's/ $//' ); }
@@ -68,6 +69,57 @@ eq "caption latin" "tübätäy" "$(AYDA_ALIF=latin cap happy)"
 eq "caption arab"  "$(printf '%s' түбәтәй | cyrl_to_arab)" "$(AYDA_ALIF=arab cap tea)"
 eq "caption en"    "skullcap" "$(AYDA_LANG=en cap angry)"
 eq "tea tomorrow latin" "irtägä" "$(AYDA_ALIF=latin t tea.tomorrow)"
+
+echo "── kuberoot backend: tables ──"
+kr() ( . lib/kuberoot.sh; "$@" )
+eq "сәламәтлек→health"      "health"       "$(kr resolve_verb сәламәтлек)"
+eq "kire-kaytar→rollback"   "rollback"     "$(kr resolve_verb kire-kaytar)"
+eq "дисклар→disks"          "disks"        "$(kr resolve_noun дисклар)"
+eq "слотлар→bootentries"    "bootentries"  "$(kr resolve_noun слотлар)"
+eq "төен→osconfigs"         "osconfigs"    "$(kr resolve_noun төен)"
+eq "arab хезмәтләр→nodeservices" "nodeservices" "$(kr resolve_noun "$(printf '%s' хезмәтләр | cyrl_to_arab)")"
+eq "Talos table kept"       "dmesg"        "$(kr talos_translate_verb системлог)"
+eq "dmesg is Talos-only"    "yes"          "$(kr kr_talos_only dmesg && echo yes)"
+eq "sistemlog is Talos-only" "yes"         "$(kr kr_talos_only sistemlog && echo yes)"
+badv=""; for w in $(kr dict_verbs); do [ -n "$(kr translate_verb "$w")" ] || badv="$badv $w"; done
+eq "kuberoot: every dict_verbs word is a verb" "" "$badv"
+badn=""; for w in $(kr dict_nouns); do [ "$(kr translate_noun "$w")" != "$w" ] || badn="$badn $w"; done
+eq "kuberoot: every dict_nouns word is a noun" "" "$badn"
+
+echo "── kuberoot backend: kubectl calls (fake kubectl) ──"
+FK="$(mktemp -d)"; trap 'rm -rf "$FK"' EXIT
+cat > "$FK/kubectl" <<'FAKE'
+#!/usr/bin/env bash
+echo "$*" >> "$FAKE_LOG"
+case "$*" in
+  *"get osconfigs -o jsonpath"*) printf '%b' "${FAKE_OSCONFIGS:-}" ;;
+  *"get bootentries"*"jsonpath"*) printf '%b' "${FAKE_SLOTS:-}" ;;
+  *"create -f -"*) cat >> "$FAKE_LOG" ;;
+esac
+FAKE
+chmod +x "$FK/kubectl"
+export FAKE_LOG="$FK/log"
+# ktos ARGS… — run tos on the fake kubectl; prints the kubectl calls, one per line.
+ktos() { : > "$FAKE_LOG"; TOS_KUBECTL="$FK/kubectl" TOS_NO_TEA=1 TOS_PLAIN=1 bash bin/tos "$@" >/dev/null 2>&1
+         sed 's/[0-9]\{4\}-[0-9-]*T[0-9:]*Z/NOW/; s/tos-[0-9]\{14\}/tos-TS/' "$FAKE_LOG"; }
+eq "health -n" "get osconfigs,nodeservices,bootentries -l kuberoot.dev/node=t1" "$(ktos сәламәтлек -n t1)"
+eq "logs -n"   "get --raw /apis/node.kuberoot.dev/v1alpha1/nodeservices/t1.kubelet/log" \
+   "$(FAKE_OSCONFIGS='t1 t1\n' ktos көндәлек kubelet -n t1)"
+eq "get with name -n" "get disks t1.sda" "$(ktos күрсәт диск sda -n t1)"
+eq "kubeconfig" "get kubeconfigs admin -o jsonpath={.kubeconfig}" "$(ktos татарнетес-конфиг)"
+eq "reboot via one node's API" "patch osconfigs n1 --type merge -p {\"spec\":{\"rebootRequestedAt\":\"NOW\"}}" \
+   "$(FAKE_OSCONFIGS='n1 \n' ktos яңадан-кабыз | tail -1)"
+eq "reboot, many nodes, no -n" "1" "$(FAKE_OSCONFIGS='a a\nb b\n' ktos reboot | wc -l | tr -d ' ')"
+eq "restart a service, flags kept" "--context c patch nodeservices t1.kubelet --type merge -p {\"spec\":{\"restartedAt\":\"NOW\"}}" \
+   "$(ktos хезмәтләр kubelet restart -n t1 --context c)"
+eq "upgrade through the cluster names <node>.<name>" "  name: n1.tos-TS" \
+   "$(FAKE_OSCONFIGS='n1 n1\n' ktos яңарт --url https://r/x.tar | grep '  name:')"
+eq "upgrade --no-reboot" "  reboot: false" "$(ktos upgrade --url u --no-reboot -n n1 | grep reboot:)"
+eq "upgrade without --url calls nothing" "" "$(ktos яңарт -n n1)"
+eq "rollback prefers the other slot of that node" "patch bootentries t1.slot-b --type merge -p {\"spec\":{\"preferred\":true}}" \
+   "$(FAKE_SLOTS='t1.slot-a true\nt1.slot-b false\nt2.slot-a false\n' ktos кире-кайтар -n t1 | sed -n 2p)"
+eq "Talos-only verb exits 64" "64" "$(TOS_KUBECTL="$FK/kubectl" TOS_NO_TEA=1 TOS_PLAIN=1 bash bin/tos системлог >/dev/null 2>&1; echo $?)"
+eq "unknown backend exits 64" "64" "$(TOS_BACKEND=zz TOS_NO_TEA=1 bash bin/tos версия >/dev/null 2>&1; echo $?)"
 
 echo; echo "result: PASS=$PASS FAIL=$FAIL"
 [ "$FAIL" -eq 0 ]

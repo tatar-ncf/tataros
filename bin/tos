@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════════════════
-#  TOS — TatarOS Linux идарә коралы / control tool (talosctl кабыгы)
-#  Милли Talos. Татарча әмерләр talosctl'га тәрҗемә ителә.
+#  TOS — TatarOS Linux идарә коралы / control tool
+#  TatarOS kuberoot өстендә: татарча әмерләр kubectl аша kuberoot төененең
+#  API'сына бара (TOS_BACKEND=kuberoot). Элекке Talos нигезе дә кала:
+#  TOS_BACKEND=talos — talosctl кабыгы.
+#  TatarOS runs on kuberoot: Tatar verbs reach the kuberoot node API through
+#  kubectl. The Talos backend (talosctl) stays selectable.
 #  МӨҺИМ: TatarOS кластерга КУБЕРНЕТЕС түгел, ТАТАРНЕТЕС бирә!
 #  TatarOS boots TATARNETES, not vanilla Kubernetes.
 #
@@ -32,48 +36,59 @@ for _m in render alif catalog i18n complete dictionary faces phrases teatime cal
 done
 
 TALOSCTL_BIN="${TOS_TALOSCTL:-talosctl}"
-TOS_VERSION="2.0.0"
+TOS_BACKEND="${TOS_BACKEND:-kuberoot}"
+TOS_VERSION="3.0.0"
+case "$TOS_BACKEND" in
+  kuberoot) # shellcheck source=/dev/null
+            . "$LIB/kuberoot.sh" ;;   # Talos tables stay as talos_translate_*
+  talos) ;;
+  *) printf '%s\n' "  $(t tos.backend.unknown "$TOS_BACKEND")" >&2; exit 64 ;;
+esac
 
 _help_tt() {
   cat <<HLP | alif_render
-  TOS — TatarOS Linux идарә коралы  v${TOS_VERSION}
-  Милли Talos. Кластерга ТАТАРНЕТЕС бирә.
+  TOS — TatarOS Linux идарә коралы  v${TOS_VERSION}  (нигез: ${TOS_BACKEND})
+  kuberoot өстендәге милли OS. Кластерга ТАТАРНЕТЕС бирә.
 
   КУЛЛАНУ:
-    tos <фигыль> [асыл] [флаглар]
+    tos <фигыль> [асыл] [-n төен] [флаглар]
 
-  МИСАЛЛАР:
-    tos сәламәтлек                    → talosctl health
-    tos татарнетес-конфиг             → talosctl kubeconfig   (Татарнетес!)
-    tos күрсәт төеннәр                → talosctl get members
+  МИСАЛЛАР (kuberoot, kubectl аша):
+    tos сәламәтлек -n tatar-1         → төен, хезмәтләр, слотлар
+    tos татарнетес-конфиг             → kubectl get kubeconfigs admin
+    tos күрсәт дисклар -n tatar-1     → kubectl get disks -l kuberoot.dev/node=tatar-1
+    tos көндәлек kubelet -n tatar-1   → хезмәт көндәлеге
+    tos яңарт --url <URL> -n tatar-1  → A/B яңарту
     tos kürsät töennär               → латинча да языла
-    tos яңадан-кабыз -n 10.0.0.5      → talosctl reboot -n 10.0.0.5
+    TOS_BACKEND=talos tos сәламәтлек  → talosctl health
 
   ЭЧКЕ ӘМЕРЛӘР:
     tos ярдәм · сүзлек · версия · шигырь · мәкаль · чәй · сәлам
 
   КӨЙЛӘМӘЛӘР (ENV):
-    TOS_LANG=tt|en · TOS_ALIF=cyrl|latin|arab
-    TOS_TALOSCTL=<юл> · TOS_NO_TEA=1 · TOS_FORCE_TEA=1 · TOS_PLAIN=1
+    TOS_BACKEND=kuberoot|talos · TOS_LANG=tt|en · TOS_ALIF=cyrl|latin|arab
+    TOS_KUBECTL=<юл> · TOS_TALOSCTL=<юл> · TOS_NO_TEA=1 · TOS_FORCE_TEA=1 · TOS_PLAIN=1
 HLP
 }
 _help_en() {
   cat <<HLP
-  tos — TatarOS Linux control tool  v${TOS_VERSION}
-  A national Talos that provisions Tatarnetes.
+  tos — TatarOS Linux control tool  v${TOS_VERSION}  (backend: ${TOS_BACKEND})
+  A national OS on kuberoot that provisions Tatarnetes.
 
   USAGE:
-    tos <verb> [resource] [flags]
+    tos <verb> [resource] [-n node] [flags]
 
-  EXAMPLES:
-    tos сәламәтлек                    → talosctl health
-    tos татарнетес-конфиг             → talosctl kubeconfig (yields Tatarnetes!)
-    tos kürsät töennär               → talosctl get members (Latin input)
-    tos get nodes                     → plain talosctl works too
+  EXAMPLES (kuberoot, through kubectl):
+    tos сәламәтлек -n tatar-1         → the node, its services and boot slots
+    tos татарнетес-конфиг             → kubectl get kubeconfigs admin
+    tos көндәлек kubelet -n tatar-1   → a service's log
+    tos upgrade --url <URL> -n tatar-1 → an A/B upgrade
+    tos kürsät töennär               → Latin input
+    TOS_BACKEND=talos tos health      → talosctl health
 
   BUILT-INS: tos ярдәм|help · сүзлек · версия · шигырь · мәкаль · чәй · сәлам
-  ENV: TOS_LANG=tt|en · TOS_ALIF=cyrl|latin|arab · TOS_TALOSCTL · TOS_NO_TEA
-       TOS_FORCE_TEA · TOS_PLAIN
+  ENV: TOS_BACKEND=kuberoot|talos · TOS_LANG=tt|en · TOS_ALIF=cyrl|latin|arab
+       TOS_KUBECTL · TOS_TALOSCTL · TOS_NO_TEA · TOS_FORCE_TEA · TOS_PLAIN
 HLP
 }
 show_help() { if [ "$AYDA_LANG" = "en" ]; then _help_en >&2; else _help_tt >&2; fi }
@@ -83,8 +98,11 @@ show_version() {
   tat_bold "  TatarOS Linux  v${TOS_VERSION}"
   printf '%b\n' "  ${TAT_GREEN}$(t tos.version.tagline)${TAT_RESET}" >&2
   printf '%b\n' "  ${TAT_DIM}$(t version.dedication)${TAT_RESET}" >&2
-  if command -v "$TALOSCTL_BIN" >/dev/null 2>&1; then
-    "$TALOSCTL_BIN" version --client 2>/dev/null | sed 's/^/    /' >&2 || true
+  local cli="$TALOSCTL_BIN"
+  [ "$TOS_BACKEND" = kuberoot ] && cli="$KR_KUBECTL"
+  printf '%b\n' "  ${TAT_DIM}TOS_BACKEND=${TOS_BACKEND}${TAT_RESET}" >&2
+  if command -v "$cli" >/dev/null 2>&1; then
+    "$cli" version --client 2>/dev/null | sed 's/^/    /' >&2 || true
   fi
   tat_carpet
 }
@@ -134,6 +152,12 @@ main() {
   if tea_now; then show_tea_break; exit 42; fi
 
   local kverb; kverb="$(resolve_verb "$verb")"    # латин фолбэк / Latin input
+  if [ -z "$kverb" ] && [ "$TOS_BACKEND" = kuberoot ] && kr_talos_only "$verb"; then
+    { tat_carpet; tat_face_angry
+      printf '%b\n' "  ${TAT_RED}$(t tos.kr.talos_only "$verb")${TAT_RESET}"
+      tat_carpet; } >&2
+    exit 64
+  fi
   if [ -z "$kverb" ]; then
     { tat_carpet; tat_face_angry
       printf '%b\n' "  ${TAT_RED}${TAT_BOLD}$(t err.unknown_verb "$verb")${TAT_RESET}"
@@ -141,6 +165,12 @@ main() {
       printf '%b\n' "  $(t tos.hint.try_help)"
       tat_carpet; } >&2
     exit 64
+  fi
+
+  local rc
+  if [ "$TOS_BACKEND" = kuberoot ]; then
+    kr_main "$kverb" "$@"; rc=$?
+    _footer "$rc"; exit "$rc"
   fi
 
   # Бары тик беренче позицион сүзне тәрҗемә (асыл төре); исем/флаг кыйммәте —
@@ -169,8 +199,13 @@ main() {
   fi
 
   "$TALOSCTL_BIN" "$kverb" ${kargs[@]+"${kargs[@]}"}
-  local rc=$?
+  rc=$?
+  _footer "$rc"
+  exit "$rc"
+}
 
+_footer() {
+  local rc="$1"
   if [ "$rc" -eq 0 ]; then
     tat_fun_enabled && { tat_carpet; tat_face_happy
       printf '%b\n' "  ${TAT_GREEN}${TAT_BOLD}$(tat_random_praise)${TAT_RESET}" >&2
@@ -183,7 +218,7 @@ main() {
       printf '%b\n' "  ${TAT_RED}${TAT_BOLD}$(tat_random_curse)${TAT_RESET}  ${TAT_DIM}$(t err.code "$rc")${TAT_RESET}" >&2
       tat_carpet; }
   fi
-  exit "$rc"
+  return 0
 }
 
 main "$@"
