@@ -30,7 +30,7 @@ while [ -L "$_self" ]; do
 done
 TOS_HOME="$(cd "$(dirname "$_self")/.." && pwd)"
 LIB="$TOS_HOME/lib"
-for _m in render alif catalog i18n complete dictionary faces phrases teatime calendar errors; do
+for _m in render alif catalog i18n complete dictionary faces phrases teatime teawindows calendar errors; do
   # shellcheck source=/dev/null
   . "$LIB/$_m.sh"
 done
@@ -64,6 +64,7 @@ _help_tt() {
 
   ЭЧКЕ ӘМЕРЛӘР:
     tos ярдәм · сүзлек · версия · шигырь · мәкаль · чәй · сәлам
+    tos чәй-тәрәзәләре [--days 7] [--rollout <исем>]  → чәй тәнәфесләре = FleetRollout тәрәзәләре
 
   КӨЙЛӘМӘЛӘР (ENV):
     TOS_BACKEND=kuberoot|talos · TOS_LANG=tt|en · TOS_ALIF=cyrl|latin|arab
@@ -87,6 +88,8 @@ _help_en() {
     TOS_BACKEND=talos tos health      → talosctl health
 
   BUILT-INS: tos ярдәм|help · сүзлек · версия · шигырь · мәкаль · чәй · сәлам
+  TEA WINDOWS: tos tea-windows [--days 7] [--tz Europe/Moscow] [-o yaml|json] [--rollout NAME]
+             → tea breaks as a kuberoot FleetRollout's spec.maintenanceWindows
   ENV: TOS_BACKEND=kuberoot|talos · TOS_LANG=tt|en · TOS_ALIF=cyrl|latin|arab
        TOS_KUBECTL · TOS_TALOSCTL · TOS_NO_TEA · TOS_FORCE_TEA · TOS_PLAIN
 HLP
@@ -146,6 +149,7 @@ main() {
     шигырь|тукай|tukay|poem)    print_poem;   exit 0 ;;
     мәкаль|мәкальләр|proverb)   print_proverb; exit 0 ;;
     чәй|tea)                    tea_status;   exit 0 ;;
+    чәй-тәрәзәләре|tea-windows) teawin_main "$@"; exit $? ;;   # kuberoot FleetRollout
     сәлам|salam|исәнме|hi)      greet;        exit 0 ;;
   esac
 
